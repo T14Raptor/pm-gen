@@ -72,7 +72,7 @@ func (o OreType) Place(w *world.World, pos cube.Pos, r *rand.Random) {
 							pos := cube.Pos{int(xx), int(yy), int(zz)}
 
 							if (sizeX+sizeY+sizeZ) < 1 && w.Block(pos) == o.Replaces {
-								w.PlaceBlock(pos, o.Material)
+								w.SetBlock(pos, o.Material)
 							}
 						}
 					}
