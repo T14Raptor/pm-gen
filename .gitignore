@@ -1,0 +1,8 @@
+# JetBrains
+.idea/
+
+# Dragonfly
+/world/
+/players/
+/resources/
+config.toml
