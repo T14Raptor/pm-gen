@@ -11,7 +11,7 @@ func (m SmallMountains) Populators() []populate.Populator {
 }
 
 func (m SmallMountains) ID() uint8 {
-	return IDMountains
+	return IDSmallMountains
 }
 
 func (m SmallMountains) Elevation() (min, max int) {

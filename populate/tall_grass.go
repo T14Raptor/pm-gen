@@ -23,7 +23,7 @@ func (t TallGrass) Populate(w *world.World, pos world.ChunkPos, chunk *chunk.Chu
 	for i := int32(0); i < amount; i++ {
 		x, z := int(r.Range(pos[0]*16, pos[0]*16+15)), int(r.Range(pos[1]*16, pos[1]*16+15))
 		if y, ok := t.highestWorkableBlock(w, x, z); ok {
-			w.SetBlock(cube.Pos{x, y, z}, tallGrass)
+			w.SetBlock(cube.Pos{x, y, z}, tallGrass, nil)
 		}
 	}
 }

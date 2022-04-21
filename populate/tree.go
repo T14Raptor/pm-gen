@@ -76,7 +76,7 @@ func (SpruceTree) Grow(w *world.World, pos cube.Pos, r *rand.Random) {
 
 				p := cube.Pos{x, yy, z}
 				if b := w.Block(p); (b.Model() != model.Solid{}) {
-					w.SetBlock(p, block.Leaves{Wood: block.SpruceWood()})
+					w.SetBlock(p, block.Leaves{Wood: block.SpruceWood()}, nil)
 				}
 			}
 		}
@@ -132,7 +132,7 @@ func basicTop(w *world.World, pos cube.Pos, r *rand.Random, leaves block.Leaves,
 					continue
 				}
 				if (w.Block(cube.Pos{xx, yy, zz}).Model() != model.Solid{}) {
-					w.SetBlock(cube.Pos{xx, yy, zz}, leaves)
+					w.SetBlock(cube.Pos{xx, yy, zz}, leaves, nil)
 				}
 			}
 		}
@@ -140,12 +140,12 @@ func basicTop(w *world.World, pos cube.Pos, r *rand.Random, leaves block.Leaves,
 }
 
 func trunk(w *world.World, pos cube.Pos, wood block.WoodType, trunkHeight int) {
-	w.SetBlock(pos.Subtract(cube.Pos{0, 1}), block.Dirt{})
+	w.SetBlock(pos.Subtract(cube.Pos{0, 1}), block.Dirt{}, nil)
 
 	for y := 0; y < trunkHeight; y++ {
 		b := w.Block(pos.Add(cube.Pos{0, y}))
 		if _, ok := overridable[b]; ok {
-			w.SetBlock(pos.Add(cube.Pos{0, y}), block.Log{Wood: wood})
+			w.SetBlock(pos.Add(cube.Pos{0, y}), block.Log{Wood: wood}, nil)
 		}
 	}
 }
