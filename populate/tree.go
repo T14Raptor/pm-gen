@@ -140,7 +140,7 @@ func basicTop(w *world.World, pos cube.Pos, r *rand.Random, leaves block.Leaves,
 }
 
 func trunk(w *world.World, pos cube.Pos, wood block.WoodType, trunkHeight int) {
-	w.SetBlock(pos.Subtract(cube.Pos{0, 1}), block.Dirt{}, &world.SetOpts{DisableBlockUpdates: true, DisableLiquidDisplacement: true})
+	w.SetBlock(pos.Sub(cube.Pos{0, 1}), block.Dirt{}, &world.SetOpts{DisableBlockUpdates: true, DisableLiquidDisplacement: true})
 
 	for y := 0; y < trunkHeight; y++ {
 		b := w.Block(pos.Add(cube.Pos{0, y}))
