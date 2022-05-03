@@ -35,13 +35,17 @@ type OreType struct {
 }
 
 func (o OreType) Place(w *world.World, pos cube.Pos, r *rand.Random) {
+	chunkminx := (pos.X() >> 4) << 4
+	chunkminz := (pos.Z() >> 4) << 4
+	chunkmaxx := chunkminx + 15
+	chunkmaxz := chunkminz + 15
+
 	clusterSize := float64(o.ClusterSize)
-	vec := pos.Vec3()
 	angle := r.Float64() * math.Pi
 	offset := mgl64.Vec2{math.Cos(angle), math.Sin(angle)}.Mul(clusterSize / 8)
-	x1, x2 := (vec[0])+8+offset[0], (vec[0])+8-offset[0]
-	z1, z2 := (vec[2])+8+offset[1], (vec[2])+8-offset[1]
-	y1, y2 := (vec[1])+float64(r.Int31n(3))+2, vec[1]+float64(r.Int31n(3))+2
+	x1, x2 := float64(pos.X())+8+offset[0], float64(pos.X())+8-offset[0]
+	z1, z2 := float64(pos.Z())+8+offset[1], float64(pos.Z())+8-offset[1]
+	y1, y2 := float64(pos.Y())+float64(r.Int31n(3))+2, float64(pos.Y())+float64(r.Int31n(3))+2
 	for i := float64(0); i <= clusterSize; i++ {
 		seedX := x1 + (x2-x1)*i/clusterSize
 		seedY := y1 + (y2-y1)*i/clusterSize
@@ -56,6 +60,12 @@ func (o OreType) Place(w *world.World, pos cube.Pos, r *rand.Random) {
 		endZ := float64(int(seedZ + size))
 
 		for xx := startX; xx <= endX; xx++ {
+			if int(xx) < chunkminx {
+				continue
+			}
+			if int(xx) > chunkmaxx {
+				continue
+			}
 			sizeX := (xx + 0.5 - seedX) / size
 			sizeX *= sizeX
 
@@ -66,13 +76,20 @@ func (o OreType) Place(w *world.World, pos cube.Pos, r *rand.Random) {
 
 					if yy > 0 && (sizeX+sizeY) < 1 {
 						for zz := startZ; zz <= endZ; zz++ {
+							if int(zz) < chunkminz {
+								continue
+							}
+							if int(zz) > chunkmaxz {
+								continue
+							}
+
 							sizeZ := (zz + 0.5 - seedZ) / size
 							sizeZ *= sizeZ
 
 							pos := cube.Pos{int(xx), int(yy), int(zz)}
 
 							if (sizeX+sizeY+sizeZ) < 1 && w.Block(pos) == o.Replaces {
-								w.SetBlock(pos, o.Material)
+								w.SetBlock(pos, o.Material, &world.SetOpts{DisableBlockUpdates: true, DisableLiquidDisplacement: true})
 							}
 						}
 					}

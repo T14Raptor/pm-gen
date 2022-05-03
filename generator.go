@@ -60,10 +60,10 @@ type Generator struct {
 }
 
 var (
-	bedrock, _ = world.BlockRuntimeID(block.Bedrock{})
-	stone, _   = world.BlockRuntimeID(block.Stone{})
-	air, _     = world.BlockRuntimeID(block.Air{})
-	water, _   = world.BlockRuntimeID(block.Water{Depth: 8, Still: true})
+	bedrock = world.BlockRuntimeID(block.Bedrock{})
+	stone   = world.BlockRuntimeID(block.Stone{})
+	air     = world.BlockRuntimeID(block.Air{})
+	water   = world.BlockRuntimeID(block.Water{Depth: 8, Still: true})
 )
 
 type PopulationEntry struct {
@@ -104,12 +104,15 @@ func (g *Generator) GenerateChunk(pos world.ChunkPos, chunk *chunk.Chunk) {
 	noise := g.noise.getFastNoise3D(16, 128, 16, 4, 8, 4, int64(pos[0])*16, 0, int64(pos[1])*16)
 
 	var biomeCache = make(map[[2]int64]biome.Biome)
+	miny, max := int16(chunk.Range().Min()), int16(chunk.Range().Max())
 	for x := int64(0); x < 16; x++ {
 		for z := int64(0); z < 16; z++ {
 			var minSum, maxSum, weightSum float64
 
 			b := g.pickBiome(int64(pos[0])*16+x, int64(pos[1])*16+z)
-			chunk.SetBiomeID(uint8(x), uint8(z), b.ID())
+			for y := int16(0); y <= max; y++ {
+				chunk.SetBiome(uint8(x), miny+y, uint8(z), uint32(b.ID()))
+			}
 
 			for sx := int64(-SmoothSize); sx <= SmoothSize; sx++ {
 				for sz := int64(-SmoothSize); sz <= SmoothSize; sz++ {
@@ -143,16 +146,16 @@ func (g *Generator) GenerateChunk(pos world.ChunkPos, chunk *chunk.Chunk) {
 
 			for y := 0; y < 128; y++ {
 				if y == 0 {
-					chunk.SetRuntimeID(uint8(x), int16(y), uint8(z), 0, bedrock)
+					chunk.SetBlock(uint8(x), int16(y), uint8(z), 0, bedrock)
 					continue
 				}
 				const waterHeight = 62
 
 				noiseValue := noise[x][z][y] - 1.0/smoothHeight*(float64(y)-smoothHeight-minSum)
 				if noiseValue > 0 {
-					chunk.SetRuntimeID(uint8(x), int16(y), uint8(z), 0, stone)
+					chunk.SetBlock(uint8(x), int16(y), uint8(z), 0, stone)
 				} else if y <= waterHeight {
-					chunk.SetRuntimeID(uint8(x), int16(y), uint8(z), 0, water)
+					chunk.SetBlock(uint8(x), int16(y), uint8(z), 0, water)
 				}
 			}
 		}
@@ -160,7 +163,7 @@ func (g *Generator) GenerateChunk(pos world.ChunkPos, chunk *chunk.Chunk) {
 
 	for x := uint8(0); x < 16; x++ {
 		for z := uint8(0); z < 16; z++ {
-			b := biome.BiomeByID(chunk.BiomeID(x, z))
+			b := biome.BiomeByID(uint8(chunk.Biome(x, 0, z)))
 			c := b.GroundCover()
 			if len(c) > 0 {
 				var diffY int16
@@ -172,7 +175,7 @@ func (g *Generator) GenerateChunk(pos world.ChunkPos, chunk *chunk.Chunk) {
 				end := start - int16(len(c))
 				for y := start; y > end && y >= 0; y-- {
 					b := c[start-y]
-					r := chunk.RuntimeID(x, y, z, 0)
+					r := chunk.Block(x, y, z, 0)
 					if r == air && (b.Model() == model.Solid{}) {
 						break
 					}
@@ -183,14 +186,14 @@ func (g *Generator) GenerateChunk(pos world.ChunkPos, chunk *chunk.Chunk) {
 						}
 					}
 
-					rid, _ := world.BlockRuntimeID(b)
-					chunk.SetRuntimeID(x, y, z, 0, rid)
+					rid := world.BlockRuntimeID(b)
+					chunk.SetBlock(x, y, z, 0, rid)
 				}
 			}
 		}
 	}
 
-	bi := biome.BiomeByID(chunk.BiomeID(7, 7))
+	bi := biome.BiomeByID(uint8(chunk.Biome(7, 0, 7)))
 
 	for _, populator := range append([]populate.Populator{populate.Ore{Types: []populate.OreType{
 		{block.CoalOre{}, block.Stone{}, 20, 16, 0, 128},
